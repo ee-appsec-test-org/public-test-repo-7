@@ -1,3 +1,5 @@
+# ghas-management-template-version: 1.0
+
 name: "CodeQL Advanced Security Scanning"
 
 on:
@@ -14,11 +16,13 @@ env:
   ARTIFACTORY_PASSWORD: ${{ secrets.EE_ARTIFACTORY_PASSWORD }}
   ARTIFACTORY_URL: ${{ secrets.EE_ARTIFACTORY_URL }}
   ARTIFACTORY_USERNAME: ${{ secrets.EE_ARTIFACTORY_USERNAME }}
+  VAULT_ROLE_ID: ${{ secrets.VAULT_ROLE_ID }}
+  VAULT_SECRET_ID: ${{ secrets.VAULT_SECRET_ID }}
 
 jobs:
   analyze:
     name: Analyze
-    runs-on: ubuntu-latest
+    runs-on: ee-runner
     permissions:
       actions: read
       contents: read
@@ -37,6 +41,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set up Python
+        if: ${{ matrix.language == 'python' }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x' # Adapt if your project requires a specific version
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
@@ -47,3 +57,4 @@ jobs:
         uses: github/codeql-action/analyze@v4
         with:
           category: "/language:${{matrix.language}}"
+          threads: 2
